@@ -83,32 +83,45 @@
 
     var down = Object.create(null);
 
-    view.addEventListener('keydown', function(e){
-      self.update(e);
-      e.name = whatKey(e);
-      if (down[e.name]) {
-        e.action = 'repeat';
+    try {
+      view.addEventListener('keydown', function(e){
+        self.update(e);
+        e.name = whatKey(e);
+        if (down[e.name]) {
+          e.action = 'repeat';
+          self.emit(e);
+        } else {
+          e.action = 'activate';
+          down[e.name] = true;
+          self.lastKey = e.name;
+          self.emit(e);
+        }
+      }, true);
+    } catch (err) {
+      console.error(err);
+    }
+    try {
+      view.addEventListener('keyup', function(e){
+        self.update(e);
+        e.action = 'release';
+        self.lastKey = e.name = whatKey(e);
         self.emit(e);
-      } else {
-        e.action = 'activate';
-        down[e.name] = true;
-        self.lastKey = e.name;
+        down[e.name] = null;
+      }, true);
+    } catch (err) {
+      console.error(err);
+    }
+
+    try {
+      view.addEventListener('keypress', function(e){
+        self.update(e);
+        e.action = 'press';
+        self.lastKey = e.name = String.fromCharCode(e.keyCode);
         self.emit(e);
-      }
-    }, true);
-    view.addEventListener('keyup', function(e){
-      self.update(e);
-      e.action = 'release';
-      self.lastKey = e.name = whatKey(e);
-      self.emit(e);
-      down[e.name] = null;
-    }, true);
-    view.addEventListener('keypress', function(e){
-      self.update(e);
-      e.action = 'press';
-      self.lastKey = e.name = String.fromCharCode(e.keyCode);
-      self.emit(e);
-    }, true);
+      }, true);
+    } catch (err) {
+      console.error(err);
+    }
   }
 
   Keyboard.LOCATION = {
